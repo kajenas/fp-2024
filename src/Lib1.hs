@@ -7,17 +7,23 @@ module Lib1
 completions :: [String]
 completions = [
     "order",
-    "pizza",
-    "more_pizzas",
+    "simple_order",
+    "nested_order",
+    "pizza_order",
+    "order_details",
+    "order_type",
+    "payment_method",
+    "confirmation",
     "size",
     "crust",
     "toppings",
     "topping_list",
     "topping",
-    "more_toppings",
     "quantity",
     "integer",
+    "order_details",
     "order_type",
     "payment_method",
     "confirmation"
     ]
+

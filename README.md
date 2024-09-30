@@ -9,11 +9,15 @@ This is a functional programming project designed to mimic a pizza ordering syst
 ```markdown
 
 
-<order> ::= <pizza> | <pizza> <more_pizzas>
+<order> ::= <simple_order> | <nested_order>
+
+<simple_order> ::= <pizza_order> <order_details>
+
+<nested_order> ::= "Sub-order:" <order> <order>
+
+<pizza_order> ::= <pizza> | <pizza> <pizza_order>
 
 <pizza> ::= "Pizza" <size> <crust> <toppings> <quantity>
-
-<more_pizzas> ::= "Add another pizza?" ("yes" <pizza> | "no")
 
 <size> ::= "small" | "medium" | "large"
 
@@ -21,22 +25,21 @@ This is a functional programming project designed to mimic a pizza ordering syst
 
 <toppings> ::= "Toppings:" <topping_list>
 
-<topping_list> ::= <topping> | <topping> <more_toppings>
+<topping_list> ::= <topping> | <topping> "," <topping_list>
 
 <topping> ::= "pepperoni" | "mushrooms" | "onions" | "sausage" | "bacon" | "extra cheese" | "black olives" | "green peppers" | "pineapple"
 
-<more_toppings> ::= "," <topping_list> | "done"
-
 <quantity> ::= "Quantity:" <integer>
 
-<integer> ::= "1" | "2" | "3" | "4" | "5" | ...
+<integer> ::= [1-9][0-9]*
+
+<order_details> ::= <order_type> <payment_method> <confirmation>
 
 <order_type> ::= "Delivery" | "Pickup"
 
 <payment_method> ::= "Credit Card" | "Cash" | "Mobile Payment"
 
 <confirmation> ::= "Confirm order?" ("yes" | "no")
-
 
 ```
 
@@ -47,7 +50,6 @@ This is a functional programming project designed to mimic a pizza ordering syst
 Example:
 ```
 ADD
-ORDER ID: 1234
 SIZE: Large
 CRUST: Thin
 QUANTITY: 2
@@ -59,7 +61,6 @@ TOPPINGS: Pepperoni, Extra Cheese
 Example:
 ```
 UPDATE
-ORDER ID: 1234
 PIZZA SIZE: Medium
 CRUST: Thick
 NEW QUANTITY: 3
@@ -70,7 +71,6 @@ NEW QUANTITY: 3
     Example:
     ```
     REMOVE
-    ORDER ID: 1234
     PIZZA SIZE: Large
     CRUST: Stuffed
 
