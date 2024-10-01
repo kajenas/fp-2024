@@ -8,72 +8,73 @@ This is a functional programming project designed to mimic a pizza ordering syst
 
 ```markdown
 
+<remove_order> ::= "Remove\n" <order>
+<new_order> ::= "New order\n" <order>
+<add_pizza_to_order> ::= "Add pizza\n" <pizza> <order>
 
-<order> ::= <simple_order> | <nested_order>
+<order> ::= <simple_order> | <complex_order>
 
 <simple_order> ::= <pizza_order> <order_details>
 
-<nested_order> ::= "Sub-order:" <order> <order>
+<complex_order> ::= "Sub-order:\n" <order> <order>
 
 <pizza_order> ::= <pizza> | <pizza> <pizza_order>
 
-<pizza> ::= "Pizza" <size> <crust> <toppings> <quantity>
+<pizza> ::= "Pizza:\n" <size> <crust> <toppings> <quantity>
 
-<size> ::= "small" | "medium" | "large"
+<size> ::=  ("small" | "medium" | "large") "\n"
 
-<crust> ::= "thin" | "thick" | "stuffed"
+<crust> ::=  ("thin" | "thick" | "stuffed") "\n"
 
-<toppings> ::= "Toppings:" <topping_list>
+<toppings> ::= <topping_list>
 
 <topping_list> ::= <topping> | <topping> "," <topping_list>
 
-<topping> ::= "pepperoni" | "mushrooms" | "onions" | "sausage" | "bacon" | "extra cheese" | "black olives" | "green peppers" | "pineapple"
+<topping> ::= "pepperoni" | "mushrooms" | "onions" | "sausage" | "bacon" | "extra cheese" | "black olives" | "green peppers" | "pineapple" "\n"
 
-<quantity> ::= "Quantity:" <integer>
+<quantity> ::= <integer>
 
-<integer> ::= [1-9][0-9]*
+<integer> ::= [1-9]+
 
 <order_details> ::= <order_type> <payment_method> <confirmation>
 
-<order_type> ::= "Delivery" | "Pickup"
+<order_type> ::= ("Delivery" | "Pickup") "\n"
 
-<payment_method> ::= "Credit Card" | "Cash" | "Mobile Payment"
+<payment_method> ::= ("Credit Card" | "Cash" | "Mobile Payment") "\n"
 
-<confirmation> ::= "Confirm order?" ("yes" | "no")
+<confirmation> ::= ("Confirm" | "Cancel")
 
 ```
 
 ### Commands
 
-* `add_pizza_to_order` - adds a pizza to order
+* `new_order` - makes an order
 
 Example:
 ```
-ADD
-SIZE: Large
-CRUST: Thin
-QUANTITY: 2
-TOPPINGS: Pepperoni, Extra Cheese
+Pizza
+Large
+Thin
+2
+Pepperoni, Extra Cheese
+Delivery
+Cash
+Confirm
 
 ```
-* `update_pizza_quantity` - updates the quantity of a specific pizza
-
-Example:
-```
-UPDATE
-PIZZA SIZE: Medium
-CRUST: Thick
-NEW QUANTITY: 3
-
-```
-* `remove_pizza_from_order` - removes a specific pizza from order
+* `remove_order` - removes an order
     
     Example:
     ```
-    REMOVE
-    PIZZA SIZE: Large
-    CRUST: Stuffed
+    Remove
+    Pizza
+    large
+    thick
+    4
+    mushrooms
+    delivery
+    Credit Card
+    Confirm
 
     ```
-* `change_payment_method` - changes the payment method of a specific order
-* `cancel_order` - cancels specific order
+* `add_pizza_to_order` - adds pizza to order
