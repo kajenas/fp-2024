@@ -8,42 +8,32 @@ This is a functional programming project designed to mimic a pizza ordering syst
 
 ```markdown
 
-<remove_order> ::= "Remove\n" <order>
-<new_order> ::= "New order\n" <order>
-<add_pizza_to_order> ::= "Add pizza\n" <pizza> <order>
+<remove_order> ::= "Remove\n" <person_order>
+<new_order> ::= "New order\n" <multiple_person_orders> <confirmation>
+<multiple_person_orders> ::= <person_order> | <person_order> <multiple_person_orders>
+<person_order> ::= <person> <order>
+<add_pizza_to_order> ::= "Add pizza\n" <person> <pizza>
 
-<order> ::= <simple_order> | <complex_order>
 
-<simple_order> ::= <pizza_order> <order_details>
-
-<complex_order> ::= "Sub-order:\n" <order> <order>
-
-<pizza_order> ::= <pizza> | <pizza> <pizza_order>
+<person> ::= ([a-z] | [A-Z])+ "\n"
+<order> ::= <simple_order> | <order_bundle>
+<simple_order> ::= <pizza> <order_details>
+<order_bundle> ::= "Order bundle\n" (<pizza> <pizza> <pizza>) <order_details>
 
 <pizza> ::= "Pizza:\n" <size> <crust> <toppings> <quantity>
-
 <size> ::=  ("small" | "medium" | "large") "\n"
-
 <crust> ::=  ("thin" | "thick" | "stuffed") "\n"
-
 <toppings> ::= <topping_list>
+<topping_list> ::= <topping> | <topping> <topping_list>
+<topping> ::= ("pepperoni" | "mushrooms" | "onions" | "sausage" | "bacon" | "extra cheese" | "black olives" | "green peppers" | "pineapple") "\n"
 
-<topping_list> ::= <topping> | <topping> "," <topping_list>
-
-<topping> ::= "pepperoni" | "mushrooms" | "onions" | "sausage" | "bacon" | "extra cheese" | "black olives" | "green peppers" | "pineapple" "\n"
-
-<quantity> ::= <integer>
-
+<quantity> ::= <integer> "\n"
 <integer> ::= [1-9]+
-
-<order_details> ::= <order_type> <payment_method> <confirmation>
-
+<order_details> ::= <order_type> <payment_method>
 <order_type> ::= ("Delivery" | "Pickup") "\n"
-
 <payment_method> ::= ("Credit Card" | "Cash" | "Mobile Payment") "\n"
 
-<confirmation> ::= ("Confirm" | "Cancel")
-
+<confirmation> ::= ("Confirm") "\n"
 ```
 
 ### Commands
@@ -52,29 +42,62 @@ This is a functional programming project designed to mimic a pizza ordering syst
 
 Example:
 ```
-Pizza
-Large
-Thin
-2
-Pepperoni, Extra Cheese
+New order
+Kajus
+Pizza:
+large
+stuffed
+pepperoni
+7
+Pickup
+Credit Card
+Jonas
+Order bundle
+Pizza:
+large
+thick
+pineapple
+pepperoni
+11
+Pizza:
+large
+thin
+black olives
+bacon
+3
+Pizza:
+small
+stuffed
+extra cheese
+pineapple
+4
 Delivery
-Cash
+Credit Card
+Tomas
+Pizza:
+medium
+thick
+pineapple
+7
+Delivery
+Mobile Payment
 Confirm
+
 
 ```
 * `remove_order` - removes an order
     
-    Example:
-    ```
     Remove
-    Pizza
+    Kajus
+    Pizza:
     large
-    thick
-    4
-    mushrooms
-    delivery
+    stuffed
+    pepperoni
+    7
+    Pickup
     Credit Card
     Confirm
+
 
     ```
 * `add_pizza_to_order` - adds pizza to order

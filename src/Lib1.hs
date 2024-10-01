@@ -6,14 +6,15 @@ module Lib1
 -- to be autocompleted in your program's repl.
 completions :: [String]
 completions = [
+    "remove_order",
+    "new_order",
+    "multiple_person_orders",
+    "add_pizza_to_order",
     "order",
     "simple_order",
-    "nested_order",
-    "pizza_order",
-    "order_details",
-    "order_type",
-    "payment_method",
-    "confirmation",
+    "order_bundle",
+    "person_order",
+    "pizza",
     "size",
     "crust",
     "toppings",
@@ -26,4 +27,4 @@ completions = [
     "payment_method",
     "confirmation"
     ]
-
+    
