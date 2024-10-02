@@ -8,7 +8,7 @@ This is a functional programming project designed to mimic a pizza ordering syst
 
 ```markdown
 
-<remove_order> ::= "Remove\n" <person_order>
+<remove_order> ::= "Remove\n" <person_order> <confirm>
 <new_order> ::= "New order\n" <multiple_person_orders> <confirmation>
 <multiple_person_orders> ::= <person_order> | <person_order> <multiple_person_orders>
 <person_order> ::= <person> <order>
@@ -87,17 +87,17 @@ Confirm
 ```
 * `remove_order` - removes an order
     
-    Remove
-    Kajus
-    Pizza:
-    large
-    stuffed
-    pepperoni
-    7
-    Pickup
-    Credit Card
-    Confirm
+```
+Remove
+Kajus
+Pizza:
+large
+stuffed
+pepperoni
+7
+Pickup
+Credit Card
+Confirm
+```
 
-
-    ```
 * `add_pizza_to_order` - adds pizza to order
