@@ -1,0 +1,16 @@
+Examples:
+
+
+ghci> parseQuery "New order\nKajus\nOrder bundle\nPizza:\nlarge\nthin\npepperoni\n2\nPizza:\nmedium\nthick\nbacon\n1\nPizza:\nsmall\nthin\nonions\n1\nDelivery\nCash\nTadas\nPizza:\nsmall\nthin\nsausage\n2\nDelivery\nCash\nConfirm"
+Right NewOrder [("Kajus",OrderBundle (Pizza {size = Large, crust = Thin, toppings = [Pepperoni], quantity = 2}) (Pizza {size = Medium, crust = Thick, toppings = [Bacon], quantity = 1}) (Pizza {size = Small, crust = Thin, toppings = [Onions], quantity = 1}) (OrderDetails {orderType = Delivery, paymentMethod = Cash})),("Tadas",SimpleOrder (Pizza {size = Small, crust = Thin, toppings = [Sausage], quantity = 2}) (OrderDetails {orderType = Delivery, paymentMethod = Cash}))]
+
+
+ghci> parseQuery "Add pizza\nJohn\nPizza:\nsmall\nthick\nmushrooms\n5\nConfirm"
+Right AddPizzaToOrder "John" Pizza {size = Small, crust = Thick, toppings = [Mushrooms], quantity = 5}
+ghci> 
+
+ghci> parseQuery "Add pizza\nJohn\nPizza:\nsmall\nthick\nmushrooms\n5\n"
+Left "Add pizza must end with 'Confirm'"
+
+ghci> parseQuery "Remove\nKajus\nPizza:\nlarge\nthin\npepperoni\n2\nDelivery\nCash\nConfirm"
+Right RemoveOrder "Kajus" SimpleOrder (Pizza {size = Large, crust = Thin, toppings = [Pepperoni], quantity = 2}) (OrderDetails {orderType = Delivery, paymentMethod = Cash})
