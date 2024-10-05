@@ -66,6 +66,8 @@ parseQuery input = case lines input of
   ("Add pizza":rest) -> parseAddPizzaToOrder rest
   _ -> Left "Invalid command. Must start with 'Remove', 'New order', or 'Add pizza'"
 
+
+-- <remove_order> ::= "Remove\n" <person_order> <confirmation>
 parseRemoveOrder :: [String] -> Either String Query
 parseRemoveOrder lines = do
   (person, remainingLines1) <- parsePerson lines
@@ -74,6 +76,7 @@ parseRemoveOrder lines = do
     ["Confirm"] -> Right $ RemoveOrder person order
     _ -> Left "Remove order must end with 'Confirm'"
 
+-- <new_order> ::= "New order\n" <multiple_person_orders> <confirmation>
 parseNewOrder :: [String] -> Either String Query
 parseNewOrder lines = do
   (orders, remainingLines) <- parseMultiplePersonOrders lines []
@@ -81,6 +84,7 @@ parseNewOrder lines = do
     ["Confirm"] -> Right $ NewOrder orders
     _ -> Left "New order must end with 'Confirm'"
 
+-- <add_pizza_to_order> ::= "Add pizza\n" <person> <pizza> <confirmation>
 parseAddPizzaToOrder :: [String] -> Either String Query
 parseAddPizzaToOrder lines = do
   (person, remainingLines1) <- parsePerson lines
@@ -89,6 +93,7 @@ parseAddPizzaToOrder lines = do
     ["Confirm"] -> Right $ AddPizzaToOrder person pizza
     _ -> Left "Add pizza must end with 'Confirm'"
 
+-- <multiple_person_orders> ::= <person_order> | <person_order> <multiple_person_orders>
 parseMultiplePersonOrders :: [String] -> [(String, Order)] -> Either String ([(String, Order)], [String])
 parseMultiplePersonOrders [] accum = Right (reverse accum, [])
 parseMultiplePersonOrders lines accum = do
@@ -98,12 +103,14 @@ parseMultiplePersonOrders lines accum = do
     then Right (reverse ((person, order) : accum), remainingLines2)
     else parseMultiplePersonOrders remainingLines2 ((person, order) : accum)
 
+-- <person> ::= ([a-z]|[A-Z])+ "\n"
 parsePerson :: [String] -> Either String (String, [String])
 parsePerson [] = Left "Expected person name"
 parsePerson (name:rest)
   | all isAlpha name = Right (name, rest)
   | otherwise = Left "Person name must contain only letters"
 
+-- <pizza> ::= "Pizza:\n" <size> <crust> <toppings> <quantity>
 parsePizza :: [String] -> Either String (Pizza, [String])
 parsePizza ("Pizza:":rest) = do
   (size, rest1) <- parseSize rest
@@ -113,6 +120,7 @@ parsePizza ("Pizza:":rest) = do
   Right (Pizza size crust toppings quantity, rest4)
 parsePizza _ = Left "Pizza must start with 'Pizza:'"
 
+-- <order> ::= <simple_order> | <order_bundle>
 parseOrder :: [String] -> Either String (Order, [String])
 parseOrder ("Order bundle":rest) = do
   (pizza1, rest1) <- parsePizza rest
@@ -125,6 +133,7 @@ parseOrder lines = do
   (details, rest2) <- parseOrderDetails rest1
   Right (SimpleOrder pizza details, rest2)
 
+-- <size> ::= "small" | "medium" | "large"
 parseSize :: [String] -> Either String (Size, [String])
 parseSize (size:rest) = case size of
   "small" -> Right (Small, rest)
@@ -133,6 +142,7 @@ parseSize (size:rest) = case size of
   _ -> Left "Invalid size"
 parseSize [] = Left "Expected size"
 
+-- <crust> ::= "thin" | "thick" | "stuffed"
 parseCrust :: [String] -> Either String (Crust, [String])
 parseCrust (crust:rest) = case crust of
   "thin" -> Right (Thin, rest)
@@ -141,6 +151,7 @@ parseCrust (crust:rest) = case crust of
   _ -> Left "Invalid crust"
 parseCrust [] = Left "Expected crust"
 
+-- <toppings> ::= <topping_list>
 parseToppings :: [String] -> [Topping] -> Either String ([Topping], [String])
 parseToppings [] accum = Left "Expected toppings"
 parseToppings (topping:rest) accum = case topping of
@@ -155,18 +166,21 @@ parseToppings (topping:rest) accum = case topping of
   where
     addTopping t = parseToppings rest (t:accum)
 
+-- <quantity> ::= <integer> "\n"
 parseQuantity :: [String] -> Either String (Int, [String])
 parseQuantity (q:rest) = case reads q of
   [(n, "")] | n > 0 -> Right (n, rest)
   _ -> Left "Invalid quantity"
 parseQuantity [] = Left "Expected quantity"
 
+-- <order_details> ::= <order_type> <payment_method>
 parseOrderDetails :: [String] -> Either String (OrderDetails, [String])
 parseOrderDetails lines = do
   (orderType, rest1) <- parseOrderType lines
   (paymentMethod, rest2) <- parsePaymentMethod rest1
   Right (OrderDetails orderType paymentMethod, rest2)
 
+-- <order_type> ::= "Delivery" | "Pickup"
 parseOrderType :: [String] -> Either String (OrderType, [String])
 parseOrderType (ot:rest) = case ot of
   "Delivery" -> Right (Delivery, rest)
@@ -174,6 +188,7 @@ parseOrderType (ot:rest) = case ot of
   _ -> Left "Invalid order type"
 parseOrderType [] = Left "Expected order type"
 
+-- <payment_method> ::= "Credit Card" | "Cash" | "Mobile Payment"
 parsePaymentMethod :: [String] -> Either String (PaymentMethod, [String])
 parsePaymentMethod (pm:rest) = case pm of
   "Credit Card" -> Right (CreditCard, rest)
@@ -182,15 +197,12 @@ parsePaymentMethod (pm:rest) = case pm of
   _ -> Left "Invalid payment method"
 parsePaymentMethod [] = Left "Expected payment method"
 
--- | An entity which represents your program's state.
--- Currently it has no constructors but you can introduce
--- as many as needed.
+
 data State = State {
     orders :: [(String, Order)]
 } deriving (Eq, Show)
 
--- | Creates an initial program's state.
--- It is called once when the program starts.
+
 emptyState :: State
 emptyState = State { orders = [] }
 
