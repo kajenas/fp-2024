@@ -8,11 +8,11 @@ This is a functional programming project designed to mimic a pizza ordering syst
 
 ```markdown
 
-<Remove_order> ::= "Remove\n" <person_order> <confirmation>
-<New_order> ::= "New order\n" <multiple_person_orders> <confirmation>
+<remove_order> ::= "Remove\n" <person_order> <confirmation>
+<new_order> ::= "New order\n" <multiple_person_orders> <confirmation>
 <multiple_person_orders> ::= <person_order> | <person_order> <multiple_person_orders>
 <person_order> ::= <person> <order>
-<Add_pizza_to_order> ::= "Add pizza\n" <person> <pizza> <confirmation>
+<add_pizza_to_order> ::= "Add pizza\n" <person> <pizza> <confirmation>
 
 
 <person> ::= ([a-z] | [A-Z])+ "\n"

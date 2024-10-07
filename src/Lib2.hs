@@ -69,21 +69,16 @@ parseQuery input = case words input of
     "Add":"pizza":rest -> parseAddPizzaToOrder rest
     _ -> Left "Invalid command. Must start with 'Remove', 'New order', or 'Add pizza'"
 
-    
+-- <new_order> ::= "New order\n" <multiple_person_orders> <confirmation>
 parseNewOrder :: [String] -> Either String Query
 parseNewOrder [] = Left "Expected person name after 'New order'"
-parseNewOrder (person:rest)
-    | all isAlpha person = 
-        case parseOrder rest of
-            Right (order, remaining) ->
-                case remaining of
-                    "Confirm":_ -> Right $ NewOrder [(person, order)]
-                    _ -> Left "Order must end with 'Confirm'"
-            Left err -> Left err
-    | otherwise = Left "Person name must contain only letters"
-
-
+parseNewOrder lines =
+    case parseMultiplePersonOrders lines [] of
+        Right (orders, "Confirm":_) -> Right $ NewOrder orders
+        Right (_, remaining) -> Left $ "Order must end with 'Confirm', but found: " ++ show remaining
+        Left err -> Left err
   
+-- <add_pizza_to_order> ::= "Add pizza\n" <person> <pizza> <confirmation>
 parseAddPizzaToOrder :: [String] -> Either String Query
 parseAddPizzaToOrder lines =
   case parsePerson lines of
@@ -92,7 +87,8 @@ parseAddPizzaToOrder lines =
         Right (pizza, ["Confirm"]) -> Right $ AddPizzaToOrder person pizza
         _ -> Left "Add pizza must end with 'Confirm'"
     Left err -> Left err
-    
+  
+-- <multiple_person_orders> :: = <person_order> | <person_order> <multiple_person_orders>
 parseMultiplePersonOrders :: [String] -> [(String, Order)] -> Either String ([(String, Order)], [String])
 parseMultiplePersonOrders [] accum = 
     if null accum
@@ -111,14 +107,17 @@ parseMultiplePersonOrders lines accum =
         Left err -> Left err
     Left err -> Left err
 
+ -- <person> ::= ([a-z] | [A-Z])+
 parsePerson :: [String] -> Either String (String, [String])
 parsePerson [] = Left "Expected person name"
 parsePerson (name:rest)
   | all isAlpha name = Right (name, rest)
   | otherwise = Left "Person name must contain only letters"
 
+
+-- <pizza> ::= "Pizza:\n" <size> <crust> <toppings> <quantity>
 parsePizza :: [String] -> Either String (Pizza, [String])
-parsePizza ("Pizza:":rest) =
+parsePizza ("Pizza:":rest) =  -- Ensure "Pizza:" is correctly followed by the details
   case parseSize rest of
     Right (size, rest1) ->
       case parseCrust rest1 of
@@ -131,16 +130,19 @@ parsePizza ("Pizza:":rest) =
             Left err -> Left err
         Left err -> Left err
     Left err -> Left err
-parsePizza _ = Left "Pizza must start with 'Pizza:'"
+parsePizza (x:_) = Left $ "Expected 'Pizza:', but got: " ++ x
+parsePizza [] = Left "Expected 'Pizza:', but got empty input"
 
+
+-- <order> ::= <simple_order> | <order_bundle>
 parseOrder :: [String] -> Either String (Order, [String])
-parseOrder ("Order bundle":rest) =
+parseOrder ("Order":"bundle":rest) =  -- Correctly handle the "Order bundle" keyword
   case parsePizza rest of
     Right (pizza1, rest1) ->
       case parsePizza rest1 of
         Right (pizza2, rest2) ->
           case parsePizza rest2 of
-            Right (pizza3, rest3) ->
+            Right (pizza3, rest3) ->  -- Expect three pizzas
               case parseOrderDetails rest3 of
                 Right (details, rest4) -> Right (OrderBundle pizza1 pizza2 pizza3 details, rest4)
                 Left err -> Left err
@@ -155,6 +157,7 @@ parseOrder lines =
         Left err -> Left err
     Left err -> Left err
 
+-- <size> ::=  ("small" | "medium" | "large")
 parseSize :: [String] -> Either String (Size, [String])
 parseSize (size:rest) = case size of
   "small" -> Right (Small, rest)
@@ -163,6 +166,7 @@ parseSize (size:rest) = case size of
   _ -> Left "Invalid size"
 parseSize [] = Left "Expected size"
  
+ -- <crust> ::=  ("thin" | "thick" | "stuffed")
 parseCrust :: [String] -> Either String (Crust, [String])
 parseCrust (crust:rest) = case crust of
   "thin" -> Right (Thin, rest)
@@ -171,6 +175,7 @@ parseCrust (crust:rest) = case crust of
   _ -> Left "Invalid crust"
 parseCrust [] = Left "Expected crust"
 
+-- <toppings> ::= <topping_list>
 parseToppings :: [String] -> [Topping] -> Either String ([Topping], [String])
 parseToppings [] accum = Left "Expected toppings"
 parseToppings (topping:rest) accum = case topping of
@@ -185,12 +190,14 @@ parseToppings (topping:rest) accum = case topping of
   where
     addTopping t = parseToppings rest (t:accum)
 
+-- <quantity> ::=  ([0-9])+
 parseQuantity :: [String] -> Either String (Int, [String])
 parseQuantity (q:rest) = case reads q of
   [(n, "")] | n > 0 -> Right (n, rest)
   _ -> Left "Invalid quantity"
 parseQuantity [] = Left "Expected quantity"
 
+-- <order_details> ::= <order_type> <payment_method>
 parseOrderDetails :: [String] -> Either String (OrderDetails, [String])
 parseOrderDetails lines =
   case parseOrderType lines of
@@ -200,6 +207,7 @@ parseOrderDetails lines =
         Left err -> Left err
     Left err -> Left err
 
+-- <order_type> ::=  ("Delivery" | "Pickup")
 parseOrderType :: [String] -> Either String (OrderType, [String])
 parseOrderType (ot:rest) = case ot of
   "Delivery" -> Right (Delivery, rest)
@@ -207,6 +215,7 @@ parseOrderType (ot:rest) = case ot of
   _ -> Left "Invalid order type"
 parseOrderType [] = Left "Expected order type"
 
+-- <payment_method> ::=  ("Credit Card" | "Cash" | "Mobile Payment")
 parsePaymentMethod :: [String] -> Either String (PaymentMethod, [String])
 parsePaymentMethod (pm:rest) = case pm of
   "Credit Card" -> Right (CreditCard, rest)
