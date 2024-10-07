@@ -1,8 +1,5 @@
-{-# LANGUAGE InstanceSigs #-}
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Use newtype instead of data" #-}
-
-
 
 module Lib2
     ( Query(..)
@@ -22,14 +19,11 @@ module Lib2
 
 import Data.Char (isAlpha, isDigit)
 
-
--- | An entity which represets user input.
--- It should match the grammar from Laboratory work #1.
--- Currently it has no constructors but you can introduce
--- as many as needed.
+-- | An entity which represents user input.
 data Query = RemoveOrder String Order
             | NewOrder [(String, Order)]
             | AddPizzaToOrder String Pizza
+            deriving (Eq, Show)
 
 data Order = SimpleOrder Pizza OrderDetails
            | OrderBundle Pizza Pizza Pizza OrderDetails
@@ -56,84 +50,111 @@ data OrderType = Delivery | Pickup deriving (Eq, Show)
 data PaymentMethod = CreditCard | Cash | MobilePayment deriving (Eq, Show)
 
 
--- | The instances are needed basically for tests
-
+-- <remove_order> ::= <person> <order> <confirmation>
+parseRemoveOrder :: [String] -> Either String Query
+parseRemoveOrder lines =
+  case parsePerson lines of
+    Right (person, remainingLines1) ->
+      case parseOrder remainingLines1 of
+        Right (order, ["Confirm"]) -> Right $ RemoveOrder person order
+        _ -> Left "Remove order must end with 'Confirm'"
+    Left err -> Left err
 
 parseQuery :: String -> Either String Query
-parseQuery input = case lines input of
-  ("Remove":rest) -> parseRemoveOrder rest
-  ("New order":rest) -> parseNewOrder rest
-  ("Add pizza":rest) -> parseAddPizzaToOrder rest
-  _ -> Left "Invalid command. Must start with 'Remove', 'New order', or 'Add pizza'"
+parseQuery input = case words input of
+    "New":"order":rest -> parseNewOrder rest
+    ["Remove"] -> parseRemoveOrder []
+    "Remove":rest -> parseRemoveOrder rest
+    ["Add", "pizza"] -> parseAddPizzaToOrder []
+    "Add":"pizza":rest -> parseAddPizzaToOrder rest
+    _ -> Left "Invalid command. Must start with 'Remove', 'New order', or 'Add pizza'"
 
-
--- <remove_order> ::= "Remove\n" <person_order> <confirmation>
-parseRemoveOrder :: [String] -> Either String Query
-parseRemoveOrder lines = do
-  (person, remainingLines1) <- parsePerson lines
-  (order, remainingLines2) <- parseOrder remainingLines1
-  case remainingLines2 of
-    ["Confirm"] -> Right $ RemoveOrder person order
-    _ -> Left "Remove order must end with 'Confirm'"
-
--- <new_order> ::= "New order\n" <multiple_person_orders> <confirmation>
+    
 parseNewOrder :: [String] -> Either String Query
-parseNewOrder lines = do
-  (orders, remainingLines) <- parseMultiplePersonOrders lines []
-  case remainingLines of
-    ["Confirm"] -> Right $ NewOrder orders
-    _ -> Left "New order must end with 'Confirm'"
+parseNewOrder [] = Left "Expected person name after 'New order'"
+parseNewOrder (person:rest)
+    | all isAlpha person = 
+        case parseOrder rest of
+            Right (order, remaining) ->
+                case remaining of
+                    "Confirm":_ -> Right $ NewOrder [(person, order)]
+                    _ -> Left "Order must end with 'Confirm'"
+            Left err -> Left err
+    | otherwise = Left "Person name must contain only letters"
 
--- <add_pizza_to_order> ::= "Add pizza\n" <person> <pizza> <confirmation>
+
+  
 parseAddPizzaToOrder :: [String] -> Either String Query
-parseAddPizzaToOrder lines = do
-  (person, remainingLines1) <- parsePerson lines
-  (pizza, remainingLines2) <- parsePizza remainingLines1
-  case remainingLines2 of
-    ["Confirm"] -> Right $ AddPizzaToOrder person pizza
-    _ -> Left "Add pizza must end with 'Confirm'"
-
--- <multiple_person_orders> ::= <person_order> | <person_order> <multiple_person_orders>
+parseAddPizzaToOrder lines =
+  case parsePerson lines of
+    Right (person, remainingLines1) ->
+      case parsePizza remainingLines1 of
+        Right (pizza, ["Confirm"]) -> Right $ AddPizzaToOrder person pizza
+        _ -> Left "Add pizza must end with 'Confirm'"
+    Left err -> Left err
+    
 parseMultiplePersonOrders :: [String] -> [(String, Order)] -> Either String ([(String, Order)], [String])
-parseMultiplePersonOrders [] accum = Right (reverse accum, [])
-parseMultiplePersonOrders lines accum = do
-  (person, remainingLines1) <- parsePerson lines
-  (order, remainingLines2) <- parseOrder remainingLines1
-  if null remainingLines2 || head remainingLines2 == "Confirm"
-    then Right (reverse ((person, order) : accum), remainingLines2)
-    else parseMultiplePersonOrders remainingLines2 ((person, order) : accum)
+parseMultiplePersonOrders [] accum = 
+    if null accum
+    then Left "Expected at least one order"
+    else Right (reverse accum, [])
+parseMultiplePersonOrders ("Confirm":rest) accum =
+    if null accum
+    then Left "Expected at least one order before 'Confirm'"
+    else Right (reverse accum, ["Confirm"])
+parseMultiplePersonOrders lines accum =
+  case parsePerson lines of
+    Right (person, remainingLines1) ->
+      case parseOrder remainingLines1 of
+        Right (order, remainingLines2) ->
+          parseMultiplePersonOrders remainingLines2 ((person, order) : accum)
+        Left err -> Left err
+    Left err -> Left err
 
--- <person> ::= ([a-z]|[A-Z])+ "\n"
 parsePerson :: [String] -> Either String (String, [String])
 parsePerson [] = Left "Expected person name"
 parsePerson (name:rest)
   | all isAlpha name = Right (name, rest)
   | otherwise = Left "Person name must contain only letters"
 
--- <pizza> ::= "Pizza:\n" <size> <crust> <toppings> <quantity>
 parsePizza :: [String] -> Either String (Pizza, [String])
-parsePizza ("Pizza:":rest) = do
-  (size, rest1) <- parseSize rest
-  (crust, rest2) <- parseCrust rest1
-  (toppings, rest3) <- parseToppings rest2 []
-  (quantity, rest4) <- parseQuantity rest3
-  Right (Pizza size crust toppings quantity, rest4)
+parsePizza ("Pizza:":rest) =
+  case parseSize rest of
+    Right (size, rest1) ->
+      case parseCrust rest1 of
+        Right (crust, rest2) ->
+          case parseToppings rest2 [] of
+            Right (toppings, rest3) ->
+              case parseQuantity rest3 of
+                Right (quantity, rest4) -> Right (Pizza size crust toppings quantity, rest4)
+                Left err -> Left err
+            Left err -> Left err
+        Left err -> Left err
+    Left err -> Left err
 parsePizza _ = Left "Pizza must start with 'Pizza:'"
 
--- <order> ::= <simple_order> | <order_bundle>
 parseOrder :: [String] -> Either String (Order, [String])
-parseOrder ("Order bundle":rest) = do
-  (pizza1, rest1) <- parsePizza rest
-  (pizza2, rest2) <- parsePizza rest1
-  (pizza3, rest3) <- parsePizza rest2
-  (details, rest4) <- parseOrderDetails rest3
-  Right (OrderBundle pizza1 pizza2 pizza3 details, rest4)
-parseOrder lines = do
-  (pizza, rest1) <- parsePizza lines
-  (details, rest2) <- parseOrderDetails rest1
-  Right (SimpleOrder pizza details, rest2)
+parseOrder ("Order bundle":rest) =
+  case parsePizza rest of
+    Right (pizza1, rest1) ->
+      case parsePizza rest1 of
+        Right (pizza2, rest2) ->
+          case parsePizza rest2 of
+            Right (pizza3, rest3) ->
+              case parseOrderDetails rest3 of
+                Right (details, rest4) -> Right (OrderBundle pizza1 pizza2 pizza3 details, rest4)
+                Left err -> Left err
+            Left err -> Left err
+        Left err -> Left err
+    Left err -> Left err
+parseOrder lines =
+  case parsePizza lines of
+    Right (pizza, rest1) ->
+      case parseOrderDetails rest1 of
+        Right (details, rest2) -> Right (SimpleOrder pizza details, rest2)
+        Left err -> Left err
+    Left err -> Left err
 
--- <size> ::= "small" | "medium" | "large"
 parseSize :: [String] -> Either String (Size, [String])
 parseSize (size:rest) = case size of
   "small" -> Right (Small, rest)
@@ -141,8 +162,7 @@ parseSize (size:rest) = case size of
   "large" -> Right (Large, rest)
   _ -> Left "Invalid size"
 parseSize [] = Left "Expected size"
-
--- <crust> ::= "thin" | "thick" | "stuffed"
+ 
 parseCrust :: [String] -> Either String (Crust, [String])
 parseCrust (crust:rest) = case crust of
   "thin" -> Right (Thin, rest)
@@ -151,7 +171,6 @@ parseCrust (crust:rest) = case crust of
   _ -> Left "Invalid crust"
 parseCrust [] = Left "Expected crust"
 
--- <toppings> ::= <topping_list>
 parseToppings :: [String] -> [Topping] -> Either String ([Topping], [String])
 parseToppings [] accum = Left "Expected toppings"
 parseToppings (topping:rest) accum = case topping of
@@ -166,21 +185,21 @@ parseToppings (topping:rest) accum = case topping of
   where
     addTopping t = parseToppings rest (t:accum)
 
--- <quantity> ::= <integer> "\n"
 parseQuantity :: [String] -> Either String (Int, [String])
 parseQuantity (q:rest) = case reads q of
   [(n, "")] | n > 0 -> Right (n, rest)
   _ -> Left "Invalid quantity"
 parseQuantity [] = Left "Expected quantity"
 
--- <order_details> ::= <order_type> <payment_method>
 parseOrderDetails :: [String] -> Either String (OrderDetails, [String])
-parseOrderDetails lines = do
-  (orderType, rest1) <- parseOrderType lines
-  (paymentMethod, rest2) <- parsePaymentMethod rest1
-  Right (OrderDetails orderType paymentMethod, rest2)
+parseOrderDetails lines =
+  case parseOrderType lines of
+    Right (orderType, rest1) ->
+      case parsePaymentMethod rest1 of
+        Right (paymentMethod, rest2) -> Right (OrderDetails orderType paymentMethod, rest2)
+        Left err -> Left err
+    Left err -> Left err
 
--- <order_type> ::= "Delivery" | "Pickup"
 parseOrderType :: [String] -> Either String (OrderType, [String])
 parseOrderType (ot:rest) = case ot of
   "Delivery" -> Right (Delivery, rest)
@@ -188,7 +207,6 @@ parseOrderType (ot:rest) = case ot of
   _ -> Left "Invalid order type"
 parseOrderType [] = Left "Expected order type"
 
--- <payment_method> ::= "Credit Card" | "Cash" | "Mobile Payment"
 parsePaymentMethod :: [String] -> Either String (PaymentMethod, [String])
 parsePaymentMethod (pm:rest) = case pm of
   "Credit Card" -> Right (CreditCard, rest)
@@ -202,51 +220,14 @@ data State = State {
     orders :: [(String, Order)]
 } deriving (Eq, Show)
 
-
 emptyState :: State
 emptyState = State { orders = [] }
-
-instance Eq Query where
-    (RemoveOrder p1 o1) == (RemoveOrder p2 o2) = p1 == p2 && o1 == o2
-    (NewOrder orders1) == (NewOrder orders2) = orders1 == orders2
-    (AddPizzaToOrder p1 pizza1) == (AddPizzaToOrder p2 pizza2) = p1 == p2 && pizza1 == pizza2
-    _ == _ = False
-
-instance Show Query where
-    show (RemoveOrder person order) = 
-        "RemoveOrder " ++ show person ++ " " ++ show order
-    show (NewOrder orders) = 
-        "NewOrder " ++ show orders
-    show (AddPizzaToOrder person pizza) = 
-        "AddPizzaToOrder " ++ show person ++ " " ++ show pizza
 
 stateTransition :: State -> Query -> Either String (Maybe String, State)
 stateTransition state query = case query of
     RemoveOrder person order -> handleRemoveOrder state person order
-    NewOrder orders -> handleNewOrder state orders
+    NewOrder newOrders -> handleNewOrder state newOrders
     AddPizzaToOrder person pizza -> handleAddPizzaToOrder state person pizza
-
-handleRemoveOrder :: State -> String -> Order -> Either String (Maybe String, State)
-handleRemoveOrder state@(State currentOrders) person order =
-    case lookup person currentOrders of
-        Nothing -> Left $ "No order found for " ++ person
-        Just existingOrder ->
-            if existingOrder == order
-                then Right (
-                    Just $ "Order removed for " ++ person,
-                    State { orders = filter ((/= person) . fst) currentOrders }
-                )
-                else Left $ "Order mismatch for " ++ person
-
-handleNewOrder :: State -> [(String, Order)] -> Either String (Maybe String, State)
-handleNewOrder (State currentOrders) newOrders = 
-    let conflictingCustomers = filter (\(person, _) -> any ((== person) . fst) currentOrders) newOrders
-    in if not (null conflictingCustomers)
-        then Left $ "Orders already exist for: " ++ show (map fst conflictingCustomers)
-        else Right (
-            Just $ "Added orders for: " ++ show (map fst newOrders),
-            State { orders = currentOrders ++ newOrders }
-        )
 
 handleAddPizzaToOrder :: State -> String -> Pizza -> Either String (Maybe String, State)
 handleAddPizzaToOrder state@(State currentOrders) person newPizza =
@@ -260,6 +241,26 @@ handleAddPizzaToOrder state@(State currentOrders) person newPizza =
                         Just $ "Added pizza to order for " ++ person,
                         State { orders = updateOrders person updatedOrder currentOrders }
                     )
+
+
+handleNewOrder :: State -> [(String, Order)] -> Either String (Maybe String, State)
+handleNewOrder (State currentOrders) newOrders = 
+    let conflictingCustomers = filter (\(person, _) -> any ((== person) . fst) currentOrders) newOrders
+    in if not (null conflictingCustomers)
+        then Left $ "Orders already exist for: " ++ show (map fst conflictingCustomers)
+        else Right (
+            Just $ "Added orders for: " ++ show (map fst newOrders),
+            State { orders = currentOrders ++ newOrders }
+        )
+
+handleRemoveOrder :: State -> String -> Order -> Either String (Maybe String, State)
+handleRemoveOrder (State currentOrders) person order =
+    case lookup person currentOrders of
+        Nothing -> Left $ "No order found for " ++ person
+        Just existingOrder ->
+            if existingOrder == order
+                then Right (Just $ "Order removed for " ++ person, State (filter ((/= person) . fst) currentOrders))
+                else Left $ "Order mismatch for " ++ person ++ ". Existing order: " ++ show existingOrder ++ ", attempted to remove: " ++ show order
 
 addPizzaToOrder :: Order -> Pizza -> Either String Order
 addPizzaToOrder (SimpleOrder existingPizza details) newPizza =
