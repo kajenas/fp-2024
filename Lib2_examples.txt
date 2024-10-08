@@ -2,11 +2,15 @@ Examples:
 
 
 Welcome! Press [TAB] for auto completion.
->>> New order Kajus Order bundle Pizza: small thin pepperoni 2 Pizza: medium thick bacon 1 Pizza: large stuffed sausage 3 Delivery Cash Matas Pizza: small thin pepperoni 2 Delivery Cash Tomas Pizza: small thin bacon 3 Delivery Cash Confirm
+>>>  New order Kajus Order bundle Pizza: small thin pepperoni 2 Pizza: medium thick bacon 1 Pizza: large stuffed sausage 3 Delivery Cash Matas Pizza: small thin pepperoni 2 Delivery Cash Tomas Pizza: small thin bacon 3 Delivery Cash Confirm
 Added orders for: ["Kajus","Matas","Tomas"]
->>> Remove Matas Pizza: large thick bacon 1 Delivery Cash Confirm
-ERROR:Order mismatch for Matas. Existing order: SimpleOrder (Pizza {size = Small, crust = Thin, toppings = [Pepperoni], quantity = 2}) (OrderDetails {orderType = Delivery, paymentMethod = Cash}), attempted to remove: SimpleOrder (Pizza {size = Large, crust = Thick, toppings = [Bacon], quantity = 1}) (OrderDetails {orderType = Delivery, paymentMethod = Cash})
->>> Remove Matas Pizza: small thin pepperoni 2 Delivery Cash Confirm
+>>> Remove Matas Confirm
 Order removed for Matas
+>>> Remove Matas Confirm
+ERROR:No order found for Matas
 >>> Add pizza Tomas Pizza: small thin bacon 5 Confirm
 Added pizza to order for Tomas
+>>> Remove Tomas Confirm
+Order removed for Tomas
+>>> Remove Tomas Confirm
+ERROR:No order found for Tomas

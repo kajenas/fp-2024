@@ -50,22 +50,18 @@ data OrderType = Delivery | Pickup deriving (Eq, Show)
 data PaymentMethod = CreditCard | Cash | MobilePayment deriving (Eq, Show)
 
 
--- <remove_order> ::= <person> <order> <confirmation>
+-- <remove_order> ::= <person> "Confirm"
 parseRemoveOrder :: [String] -> Either String Query
 parseRemoveOrder lines =
   case parsePerson lines of
-    Right (person, remainingLines1) ->
-      case parseOrder remainingLines1 of
-        Right (order, ["Confirm"]) -> Right $ RemoveOrder person order
-        _ -> Left "Remove order must end with 'Confirm'"
-    Left err -> Left err
+    Right (person, ["Confirm"]) -> Right $ RemoveOrder person (SimpleOrder (Pizza Small Thin [] 1) (OrderDetails Pickup Cash))  -- Placeholder order, not used anymore
+    _ -> Left "Remove order must include a person and end with 'Confirm'"
 
 parseQuery :: String -> Either String Query
 parseQuery input = case words input of
     "New":"order":rest -> parseNewOrder rest
-    ["Remove"] -> parseRemoveOrder []
+    ["Remove"] -> Left "Expected person name after 'Remove'"
     "Remove":rest -> parseRemoveOrder rest
-    ["Add", "pizza"] -> parseAddPizzaToOrder []
     "Add":"pizza":rest -> parseAddPizzaToOrder rest
     _ -> Left "Invalid command. Must start with 'Remove', 'New order', or 'Add pizza'"
 
@@ -263,13 +259,11 @@ handleNewOrder (State currentOrders) newOrders =
         )
 
 handleRemoveOrder :: State -> String -> Order -> Either String (Maybe String, State)
-handleRemoveOrder (State currentOrders) person order =
+handleRemoveOrder (State currentOrders) person _ =
     case lookup person currentOrders of
         Nothing -> Left $ "No order found for " ++ person
-        Just existingOrder ->
-            if existingOrder == order
-                then Right (Just $ "Order removed for " ++ person, State (filter ((/= person) . fst) currentOrders))
-                else Left $ "Order mismatch for " ++ person ++ ". Existing order: " ++ show existingOrder ++ ", attempted to remove: " ++ show order
+        Just _ -> 
+            Right (Just $ "Order removed for " ++ person, State (filter ((/= person) . fst) currentOrders))
 
 addPizzaToOrder :: Order -> Pizza -> Either String Order
 addPizzaToOrder (SimpleOrder existingPizza details) newPizza =
