@@ -2,32 +2,69 @@ Examples:
 
 
 Welcome! Press [TAB] for auto completion.
->>> New order Kajus Order bundle Pizza: small thin pepperoni 2 Pizza: medium thick bacon 1 Pizza: large stuffed sausage 3 Delivery Cash Matas Pizza: small thin pepperoni 2 Delivery Cash Tomas Pizza: small thin bacon 1 Delivery Cash Confirm
-Added orders for: ["Kajus","Matas","Tomas"]
->>> list Kajus Confirm
-Orders for Kajus:
-  Bundle Order:
-    2x Small Thin pizza with Pepperoni
-    1x Medium Thick pizza with Bacon
-    3x Large Stuffed pizza with Sausage
-    Delivery, paying by Cash
-
->>> list Matas Confirm
-Orders for Matas:
-  Simple Order: 2x Small Thin pizza with Pepperoni - Delivery, paying by Cash
+>>> New order Kajus Bundle Pizza: large thin pepperoni 2 Pizza: small thick mushrooms 2 Order Pizza: medium thin bacon 2 Delivery Cash Tomas Order Pizza: small thick mushrooms 3 Pickup Cash Confirm
+Added orders for: ["Kajus","Tomas"]
 
 >>> list Tomas Confirm
-Orders for Tomas:
-  Simple Order: 1x Small Thin pizza with Bacon - Delivery, paying by Cash
+Order for Tomas:
+  Small Thick crust pizza with Mushrooms, quantity: 3
 
->>> Remove Matas Confirm
-Order removed for Matas
+  Order type: Pickup
+  Payment method: Cash
 
->>> list Matas Confirm
-No orders found for Matas
+>>> list Kajus Confirm
+Bundle order for Kajus:
+  Large Thin crust pizza with Pepperoni, quantity: 2
+  Small Thick crust pizza with Mushrooms, quantity: 2
 
->>> Add pizza Tomas Pizza: small thin bacon 1 Confirm
-Added pizza to order for Tomas
+Sub-orders:
+Order for Kajus:
+  Medium Thin crust pizza with Bacon, quantity: 2
+
+  Order type: Pickup
+  Payment method: Cash
+  Order type: Delivery
+  Payment method: Cash
+
+>>> Add pizza Kajus Pizza: large thick mushrooms 3 Confirm
+Added pizza to order for Kajus
+
+>>> list Kajus Confirm
+Bundle order for Kajus:
+  Large Thin crust pizza with Pepperoni, quantity: 2
+  Small Thick crust pizza with Mushrooms, quantity: 2
+  Large Thick crust pizza with Mushrooms, quantity: 3
+
+Sub-orders:
+Order for Kajus:
+  Medium Thin crust pizza with Bacon, quantity: 2
+
+  Order type: Pickup
+  Payment method: Cash
+  Order type: Delivery
+  Payment method: Cash
+
+>>> list Tomas Confirm
+Order for Tomas:
+  Small Thick crust pizza with Mushrooms, quantity: 3
+
+  Order type: Pickup
+  Payment method: Cash
+
+>>> list Kajus Confirm
+Bundle order for Kajus:
+  Large Thin crust pizza with Pepperoni, quantity: 2
+  Small Thick crust pizza with Mushrooms, quantity: 2
+  Large Thick crust pizza with Mushrooms, quantity: 3
+
+Sub-orders:
+Order for Kajus:
+  Medium Thin crust pizza with Bacon, quantity: 2
+
+  Order type: Pickup
+  Payment method: Cash
+  Order type: Delivery
+  Payment method: Cash
 
 >>> Remove Tomas Confirm
 Order removed for Tomas
@@ -37,6 +74,3 @@ Order removed for Kajus
 
 >>> list Kajus Confirm
 No orders found for Kajus
-
->>> list Tomas Confirm
-No orders found for Tomas
