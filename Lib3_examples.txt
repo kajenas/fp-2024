@@ -1,0 +1,50 @@
+Welcome! Press [TAB] for auto completion, type ':paste' for multiline input
+-- Entering multi-line mode. Press <Ctrl-D> to finish.
+| BEGIN
+| New order Kajus Bundle Pizza: large thin pepperoni 2 Pizza: small thick mushrooms 2 Order Pizza: medium thin bacon 2 Delivery Cash Tomas Order Pizza: small thick mushrooms 3 Pickup Cash Confirm;
+| Remove Kajus Confirm;
+| list Tomas Confirm;
+| END
+| 
+State {orders = [("Tomas",SimpleOrder (Pizza {size = Small, crust = Thick, toppings = [Mushrooms], quantity = 3}) (OrderDetails {orderType = Pickup, paymentMethod = Cash}))]}
+
+>>> save
+State {orders = [("Tomas",SimpleOrder (Pizza {size = Small, crust = Thick, toppings = [Mushrooms], quantity = 3}) (OrderDetails {orderType = Pickup, paymentMethod = Cash}))]}
+
+>>> load
+State {orders = [("Tomas",SimpleOrder (Pizza {size = Small, crust = Thick, toppings = [Mushrooms], quantity = 3}) (OrderDetails {orderType = Pickup, paymentMethod = Cash}))]}
+
+>>> New order Kajus Order Pizza: small thin pepperoni 3 Delivery Cash Confirm
+State {orders = [("Tomas",SimpleOrder (Pizza {size = Small, crust = Thick, toppings = [Mushrooms], quantity = 3}) (OrderDetails {orderType = Pickup, paymentMethod = Cash})),("Kajus",SimpleOrder (Pizza {size = Small, crust = Thin, toppings = [Pepperoni], quantity = 3}) (OrderDetails {orderType = Delivery, paymentMethod = Cash}))]}
+
+>>> save
+State {orders = [("Tomas",SimpleOrder (Pizza {size = Small, crust = Thick, toppings = [Mushrooms], quantity = 3}) (OrderDetails {orderType = Pickup, paymentMethod = Cash})),("Kajus",SimpleOrder (Pizza {size = Small, crust = Thin, toppings = [Pepperoni], quantity = 3}) (OrderDetails {orderType = Delivery, paymentMethod = Cash}))]}
+
+>>> load
+State {orders = [("Tomas",SimpleOrder (Pizza {size = Small, crust = Thick, toppings = [Mushrooms], quantity = 3}) (OrderDetails {orderType = Pickup, paymentMethod = Cash})),("Kajus",SimpleOrder (Pizza {size = Small, crust = Thin, toppings = [Pepperoni], quantity = 3}) (OrderDetails {orderType = Delivery, paymentMethod = Cash}))]}
+
+>>> Remove Kajus Confirm
+State {orders = [("Tomas",SimpleOrder (Pizza {size = Small, crust = Thick, toppings = [Mushrooms], quantity = 3}) (OrderDetails {orderType = Pickup, paymentMethod = Cash}))]}
+
+>>> save
+State {orders = [("Tomas",SimpleOrder (Pizza {size = Small, crust = Thick, toppings = [Mushrooms], quantity = 3}) (OrderDetails {orderType = Pickup, paymentMethod = Cash}))]}
+
+>>> load
+State {orders = [("Tomas",SimpleOrder (Pizza {size = Small, crust = Thick, toppings = [Mushrooms], quantity = 3}) (OrderDetails {orderType = Pickup, paymentMethod = Cash}))]}
+
+_____________________________
+
+>>> New order Kajus Order Pizza: small thin pepperoni 3 Delivery Cash Confirm
+State {orders = [("Kajus",SimpleOrder (Pizza {size = Small, crust = Thin, toppings = [Pepperoni], quantity = 3}) (OrderDetails {orderType = Delivery, paymentMethod = Cash}))]}
+
+>>> Add pizza Kajus Pizza: large thick pepperoni 5 Confirm
+State {orders = [("Kajus",OrderBundle [Pizza {size = Small, crust = Thin, toppings = [Pepperoni], quantity = 3},Pizza {size = Large, crust = Thick, toppings = [Pepperoni], quantity = 5}] [] (OrderDetails {orderType = Delivery, paymentMethod = Cash}))]}
+
+>>> save
+State {orders = [("Kajus",OrderBundle [Pizza {size = Small, crust = Thin, toppings = [Pepperoni], quantity = 3},Pizza {size = Large, crust = Thick, toppings = [Pepperoni], quantity = 5}] [] (OrderDetails {orderType = Delivery, paymentMethod = Cash}))]}
+
+>>> Remove Kajus Confirm
+State {orders = []}
+
+>>> load
+State {orders = [("Kajus",OrderBundle [Pizza {size = Small, crust = Thin, toppings = [Pepperoni], quantity = 3},Pizza {size = Large, crust = Thick, toppings = [Pepperoni], quantity = 5}] [] (OrderDetails {orderType = Delivery, paymentMethod = Cash}))]}

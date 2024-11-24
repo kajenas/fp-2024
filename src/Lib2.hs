@@ -18,6 +18,7 @@ module Lib2
     , State(..)
     , emptyState
     , stateTransition
+    , Parser
     ) where
 
 import Data.Char (isAlpha, isDigit)

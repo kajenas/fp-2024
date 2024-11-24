@@ -1,3 +1,86 @@
+Remove Kajus Confirm
+New order Kajus Bundle Pizza: large thin pepperoni 2 Pizza: small thick mushrooms 2 Order Pizza: medium thin bacon 2 Delivery Cash Tomas Order Pizza: small thick mushrooms 3 Pickup Cash Confirm;
+New order Kajus Order Pizza: small thin pepperoni 3 Delivery Cash Confirm
+:paste
+load
+Remove Kajus Confirm
+New order Kajus Order Pizza: small thin pepperoni 3 Delivery Cash Confirm
+load
+load
+Remove Kajus Confirm
+save
+New order Kajus Order Pizza: small thin pepperoni 3 Delivery Cash Confirm
+load
+load
+save
+load
+:paste
+load
+Remove Kajus Confirm
+save
+New order Kajus Order Pizza: small thin pepperoni 3 Delivery Cash Confirm
+load
+Remove Kajus Confirm
+save
+New order Kajus Order Pizza: small thin pepperoni 3 Delivery Cash Confirm
+save
+New order Kajus Order Pizza: small thin pepperoni 3 Delivery Cash Confirm
+END
+Confirm;
+New order;
+BEGIN
+:paste
+save
+Remove Kajus Confirm
+Remove Kajus
+New order Kajus Order Pizza: small thin pepperoni 3 Delivery Cash Confirm
+New order Kajus Order Pizza: small thin pepperoni Delivery Cash Confirm
+:paste
+list Kajus Confirm
+list Kajus
+load
+load
+save
+save
+END
+list Tomas Confirm;
+Remove Kajus Confirm;
+New order Kajus Bundle Pizza: large thin pepperoni 2 Pizza: small thick mushrooms 2 Order Pizza: medium thin bacon 2 Delivery Cash Tomas Order Pizza: small thick mushrooms 3 Pickup Cash Confirm;
+BEGIN
+:paste
+quit
+END
+list Tomas Confirm;
+Remove Kajus Confirm;
+New order Kajus Bundle Pizza: large thin pepperoni 2 Pizza: small thick mushrooms 2 Order Pizza: medium thin bacon 2 Delivery Cash Tomas Order Pizza: small thick mushrooms 3 Pickup Cash Confirm;
+BEGIN
+:paste
+END
+list Tomas Confirm;
+Remove Kajus Confirm;
+New order Kajus Bundle Pizza: large thin pepperoni 2 Pizza: small thick mushrooms 2 Order Pizza: medium thin bacon 2 Delivery Cash Tomas Order Pizza: small thick mushrooms 3 Pickup Cash Confirm;
+BEGIN
+:paste
+BEGIN
+quit
+END
+list Tomas Confirm;
+New order Kajus Bundle Pizza: large thin pepperoni 2 Pizza: small thick mushrooms 2 Order Pizza: medium thin bacon 2 Delivery Cash Tomas Order Pizza: small thick mushrooms 3 Pickup Cash Confirm;
+BEGIN
+:paste
+END;
+list Tomas Confirm;
+Add pizza Kajus Pizza: large thick mushrooms 3 Confirm;
+New order Kajus Bundle Pizza: large thin pepperoni 2 Pizza: small thick mushrooms 2 Order Pizza: medium thin bacon 2 Delivery Cash Tomas Order Pizza: small thick mushrooms 3 Pickup Cash Confirm;
+:paste
+quit
+END
+list Tomas Confirm
+Add pizza Kajus Pizza: large thick mushrooms 3 Confirm
+New order Kajus Bundle Pizza: large thin pepperoni 2 Pizza: small thick mushrooms 2 Order Pizza: medium thin bacon 2 Delivery Cash Tomas Order Pizza: small thick mushrooms 3 Pickup Cash Confirm
+BEGIN
+:paste
+:paste
 New order
 New order
 New order kajus

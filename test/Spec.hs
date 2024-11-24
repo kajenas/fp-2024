@@ -8,12 +8,13 @@ import Data.Ord
 
 import Lib1 qualified
 import Lib2 qualified
+import Lib3 qualified
 
 main :: IO ()
 main = defaultMain tests
 
 tests :: TestTree
-tests = testGroup "Tests" [unitTests, propertyTests]
+tests = testGroup "Tests" [lib1Tests, lib2Tests, propertyTests]
 
 -- Lib1 Tests
 lib1Tests :: TestTree
@@ -103,9 +104,75 @@ lib2Tests = testGroup "Lib2 tests"
                       (Lib2.OrderDetails Lib2.Delivery Lib2.Cash))])
   ]
 
+
+
+-- Arbitrary instances for property testing
+instance Arbitrary Lib2.Size where
+    arbitrary = elements [Lib2.Small, Lib2.Medium, Lib2.Large]
+
+instance Arbitrary Lib2.Crust where
+    arbitrary = elements [Lib2.Thin, Lib2.Thick, Lib2.Stuffed]
+
+instance Arbitrary Lib2.Topping where
+    arbitrary = elements [Lib2.Pepperoni, Lib2.Mushrooms, Lib2.Onions, 
+                        Lib2.Sausage, Lib2.Bacon, Lib2.ExtraCheese]
+
+instance Arbitrary Lib2.OrderType where
+    arbitrary = elements [Lib2.Delivery, Lib2.Pickup]
+
+instance Arbitrary Lib2.PaymentMethod where
+    arbitrary = elements [Lib2.CreditCard, Lib2.Cash, Lib2.MobilePayment]
+
+instance Arbitrary Lib2.Pizza where
+    arbitrary = Lib2.Pizza 
+        <$> arbitrary 
+        <*> arbitrary 
+        <*> listOf1 arbitrary 
+        <*> choose (1, 5)  -- Reasonable quantity range
+
+instance Arbitrary Lib2.OrderDetails where
+    arbitrary = Lib2.OrderDetails <$> arbitrary <*> arbitrary
+
+instance Arbitrary Lib2.Order where
+    arbitrary = oneof [
+        Lib2.SimpleOrder <$> arbitrary <*> arbitrary,
+        Lib2.OrderBundle 
+            <$> listOf1 arbitrary           -- pizzas
+            <*> listOf arbitrary            -- suborders
+            <*> arbitrary                   -- details
+        ]
+
+instance Arbitrary Lib2.Query where
+    arbitrary = oneof [
+        Lib2.NewOrder <$> listOf1 ((,) 
+            <$> elements ["John", "Alice", "Bob"] 
+            <*> arbitrary),
+        Lib2.RemoveOrder 
+            <$> elements ["John", "Alice", "Bob"] 
+            <*> arbitrary,
+        Lib2.AddPizzaToOrder 
+            <$> elements ["John", "Alice", "Bob"] 
+            <*> arbitrary,
+        Lib2.ListOrders 
+            <$> elements ["John", "Alice", "Bob"]
+        ]
+
+
 propertyTests :: TestTree
-propertyTests = testGroup "some meaningful name"
-  [
-    QC.testProperty "sort == sort . reverse" $
-      \list -> sort (list :: [Int]) == sort (reverse list)
+propertyTests = testGroup "Property tests"
+  [ 
+  -- Test that state transitions preserve orders when adding pizza
+    QC.testProperty "stateTransition preserves existing orders when adding pizza" $
+      \name pizza ->
+        let initialState = Lib2.State [("John", Lib2.SimpleOrder 
+              (Lib2.Pizza Lib2.Medium Lib2.Thin [Lib2.Pepperoni] 1)
+              (Lib2.OrderDetails Lib2.Delivery Lib2.Cash))]
+            query = Lib2.AddPizzaToOrder name pizza
+            result = Lib2.stateTransition initialState query
+        in case result of
+             Right (_, finalState) -> 
+               case lookup "John" (Lib2.orders finalState) of
+                 Just _ -> True  -- Original order still exists
+                 Nothing -> False
+             _ -> True
   ]

@@ -3,7 +3,7 @@ Examples:
 
 Welcome! Press [TAB] for auto completion.
 >>> New order Kajus Bundle Pizza: large thin pepperoni 2 Pizza: small thick mushrooms 2 Order Pizza: medium thin bacon 2 Delivery Cash Tomas Order Pizza: small thick mushrooms 3 Pickup Cash Confirm
-Added orders for: ["Kajus","Tomas"]
+ Added orders for: ["Kajus","Tomas"]
 
 >>> list Tomas Confirm
 Order for Tomas:
@@ -74,3 +74,9 @@ Order removed for Kajus
 
 >>> list Kajus Confirm
 No orders found for Kajus
+
+BEGIN
+New order Kajus Bundle Pizza: large thin pepperoni 2 Pizza: small thick mushrooms 2 Order Pizza: medium thin bacon 2 Delivery Cash Tomas Order Pizza: small thick mushrooms 3 Pickup Cash Confirm;
+Remove Kajus Confirm;
+list Tomas Confirm;
+END
