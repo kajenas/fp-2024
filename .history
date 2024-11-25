@@ -1,3 +1,42 @@
+load
+Remove John Order Pizza: small thin pepperoni 2 Delivery Credit Confirm
+Remove Kai Order Pizza: large thick mushrooms 4 Pickup Credit Confirm
+save
+END
+Add pizza Kai Pizza: large thick mushrooms 3 Confirm;
+New order John Order Pizza: small thin pepperoni 2 Delivery Credit Confirm;
+New order Kai Order Pizza: large thick mushrooms 4 Pickup Credit Confirm;
+BEGIN
+:paste
+Remove Kai Order Pizza: large thick mushrooms 4 Pickup Credit Confirm
+Remove John Order Pizza: small thin pepperoni 2 Delivery Credit Confirm
+Remove John Order Pizza: small thin pepperoni 2 Delivery Credit Confirm;
+END
+Remove John Order Pizza: small thin pepperoni 2 Delivery Credit Confirm;
+New order Kai Order Pizza: large thick mushrooms 4 Pickup Credit Confirm;
+New order John Order Pizza: small thin pepperoni 2 Delivery Credit Confirm;
+BEGIN
+:paste
+Remove John Order Pizza: small thin pepperoni 2 Delivery Credit Confirm
+END
+New order John Order Pizza: small thin pepperoni 2 Delivery Credit Confirm;
+New order Kai Order Pizza: large thick mushrooms 4 Pickup Credit Confirm;
+BEGIN
+:paste
+Remove John Order Pizza: small thin pepperoni 2 Delivery Credit Confirm
+END
+New order Kai Order Pizza: large thick mushrooms 4 Pickup Credit Confirm
+New order John Order Pizza: small thin pepperoni 2 Delivery Credit Confirm
+BEGIN
+:paste
+Remove John Order Pizza: small thin pepperoni 2 Delivery Credit Confirm
+load
+Remove John Order Pizza: small thin pepperoni 2 Delivery Credit Confirm
+save
+Remove Kai Order Pizza: large thick mushrooms 4 Pickup Credit Confirm
+New order Kai Order Pizza: large thick mushrooms 4 Pickup Credit Confirm
+New order John Order Pizza: small thin pepperoni 2 Delivery Credit Confirm
+New order John Order Pizza: small thin pepperoni 2 Delivery Credit Confirm
 Remove Tomas Confirm
 Remove Tomas Confirm
 Add pizza Kajus Pizza: large thick mushrooms 3 Confirm
@@ -59,42 +98,3 @@ save
 New order John Order Pizza: small thin pepperoni 2 Delivery Credit Confirm
 New order John Order Pizza: small thin pepperoni quantity 2 Delivery Credit Confirm
 New order John Order Pizza: small thin pepperoni mushrooms quantity 2 Delivery Credit Confirm
-New order Kajus Bundle Pizza: large thin pepperoni 2 Pizza: small thick mushrooms 2 Pizza: medium thin bacon 2 Delivery Cash Tomas Order Pizza: small thick mushrooms 3 Pickup Cash Confirm;
-END
-Remove Kajus Confirm;
-New order Kajus Bundle Pizza: large thin pepperoni 2 Pizza: small thick mushrooms 2 Pizza: medium thin bacon 2 Delivery Cash Tomas Order Pizza: small thick mushrooms 3 Pickup Cash Confirm;
-BEGIN
-:paste
-Remove Kajus Confirm
-END
-Remove Kajus Confirm
-New order Kajus Bundle Pizza: large thin pepperoni 2 Pizza: small thick mushrooms 2 Pizza: medium thin bacon 2 Delivery Cash Tomas Order Pizza: small thick mushrooms 3 Pickup Cash Confirm;
-BEGIN
-:paste
-load
-Remove Kajus Confirm
-save
-New order Kajus Bundle Pizza: large thin pepperoni 2 Pizza: small thick mushrooms 2 Pizza: medium thin bacon 2 Delivery Cash Confirm
-load
-Remove Tomas Confirm
-Remove Kajus Confirm
-save
-END
-Add pizza Kajus Pizza: small thick pepperoni 4 Confirm;
-New order Kajus Bundle Pizza: large thin pepperoni 2 Pizza: small thick mushrooms 2 Pizza: medium thin bacon 2 Delivery Cash Tomas Order Pizza: small thick mushrooms 3 Pickup Cash Confirm;
-BEGIN
-:paste
-Remove Tomas Confirm
-Remove Kajus Confirm
-END
-Add pizza Kajus Pizza: small thick pepperoni 4 Confirm;
-New order Kajus Bundle Pizza: large thin pepperoni 2 Pizza: small thick mushrooms 2 Pizza: medium thin bacon 2 Delivery Cash Tomas Order Pizza: small thick mushrooms 3 Pickup Cash Confirm;
-BEGIN
-:paste
-save
-New order Kajus Bundle Pizza: large thin pepperoni 2 Pizza: small thick mushrooms 2 Pizza: medium thin bacon 2 Delivery Cash Tomas Order Pizza: small thick mushrooms 3 Pickup Cash Confirm
-list Kajus Confirm
-Remove Tomas Confirm
-load
-Remove Tomas Confirm
-Remove Kajus Confirm

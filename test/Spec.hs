@@ -35,7 +35,6 @@ lib2Tests = testGroup "Lib2 tests"
   ]
 
 -- Arbitrary for Lib2.Query
--- Limit the number of pizzas and orders
 genOrderList :: Gen [(String, Lib2.Order)]
 genOrderList = listOf1 ((,) <$> genName <*> genSimpleOrder)
 
@@ -43,11 +42,11 @@ genOrderList = listOf1 ((,) <$> genName <*> genSimpleOrder)
 genName :: Gen String
 genName = listOf1 $ elements ['a'..'z']
 
--- Generate only simple orders
+-- Generate only orders
 genSimpleOrder :: Gen Lib2.Order
 genSimpleOrder = Lib2.SimpleOrder <$> arbitrary <*> arbitrary
 
--- Modify Order arbitrary to only allow SimpleOrder
+
 instance Arbitrary Lib2.Order where
  arbitrary = genSimpleOrder
 
@@ -56,7 +55,7 @@ instance Arbitrary Lib2.Pizza where
  arbitrary = Lib2.Pizza
     <$> arbitrary
     <*> arbitrary
-    <*> listOf (elements [Lib2.Pepperoni, Lib2.Mushrooms]) -- Limit topping choices
+    <*> listOf (elements [Lib2.Pepperoni, Lib2.Mushrooms]) -- Limit topping choices for simplicity
     <*> choose (1, 3) -- Limit quantity range
 
 -- Keep other arbitrary instances mostly the same
@@ -78,7 +77,7 @@ instance Arbitrary Lib2.PaymentMethod where
 instance Arbitrary Lib2.OrderDetails where
  arbitrary = Lib2.OrderDetails <$> arbitrary <*> arbitrary
 
--- Modify Query to limit complexity
+
 instance Arbitrary Lib2.Query where
  arbitrary = oneof
   [ Lib2.NewOrder <$> genOrderList
@@ -87,14 +86,14 @@ instance Arbitrary Lib2.Query where
   , Lib2.ListOrders <$> genName
   ]
 
--- Limit Statements complexity
+-- Lib3 statements
 instance Arbitrary Lib3.Statements where
  arbitrary = frequency
   [ (3, Lib3.Single <$> arbitrary) 
   , (1, Lib3.Batch <$> listOf1 (arbitrary @Lib2.Query))
   ]
 
--- Property test remains the same
+-- Property test
 propertyTests :: TestTree
 propertyTests = testGroup "Property tests"
  [ QC.testProperty "parseStatements . renderStatements == Right query" $ 
