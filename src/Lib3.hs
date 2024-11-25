@@ -7,6 +7,7 @@
 module Lib3
     ( stateTransition,
       StorageOp (..),
+      Statements (..),
       storageOpLoop,
       parseCommand,
       parseStatements,
@@ -14,15 +15,17 @@ module Lib3
       renderStatements,
       parseBatch,
     ) where
-
+  
 import Control.Concurrent (Chan, readChan, writeChan)
 import Control.Concurrent.STM (TVar, atomically, readTVar, writeTVar)
 import qualified Lib2
-import Data.List (intercalate)
+import Data.List (intercalate, isPrefixOf, isInfixOf)
 import Control.Concurrent.Chan
 import Control.Concurrent.STM.TVar
 import Data.Char (isSpace)
 import Control.Monad (void)
+import Lib2 (Parser, Query)
+
 
 data StorageOp
   = Save String (Chan ())
@@ -83,45 +86,47 @@ parseCommand input = case words input of
         Right (stmts, remaining) -> Right (StatementCommand stmts, remaining)
         Left err -> Left err
 
+
 -- | Parse individual statements or batch of statements
 parseStatements :: String -> Either String (Statements, String)
-parseStatements input = 
-    let lines' = lines input
-        -- Handle empty input
-        parsedLines = if null lines' 
-                     then [Lib2.parseQuery ""]
-                     else map Lib2.parseQuery lines'
-    in if length lines' == 1
-       then case head parsedLines of
-            Right query -> Right (Single query, "")
-            Left err -> Left err
-       else if all isRightQuery parsedLines
-            then Right (Batch (map fromRight parsedLines), "")
-            else Left "Failed to parse some queries"
+parseStatements input
+  | "BEGIN" `isPrefixOf` input && "END" `isInfixOf` input =
+      let lines' = lines input
+          content = unlines $ tail $ init lines' -- Remove BEGIN and END
+      in case map Lib2.parseQuery (filter (not . null) $ lines content) of
+           queries | all isRight queries -> 
+               Right (Batch (map fromRight queries), "")
+           _ -> Left "Failed to parse some queries in batch"
+  | otherwise =
+      case Lib2.parseQuery (trim input) of
+        Right query -> Right (Single query, "")
+        Left err -> Left err
   where
-    isRightQuery (Right _) = True
-    isRightQuery _ = False
+    isRight (Right _) = True
+    isRight _ = False
     fromRight (Right x) = x
-    fromRight _ = error "Impossible case - filtered by isRightQuery"
+    fromRight _ = error "Impossible case - filtered by isRight"
+    trim = dropWhile isSpace . reverse . dropWhile isSpace . reverse
+
 
 -- | Convert state to statements for persistence
 marshallState :: Lib2.State -> Statements
 marshallState (Lib2.State orders) = 
     Batch [Lib2.NewOrder orders]
 
--- | Convert statements to string format for storage
+-- Render a list of statements (queries) as a string
 renderStatements :: Statements -> String
-renderStatements (Batch queries) = 
-    intercalate "\n" (map formatQuery queries)
+renderStatements (Batch queries) =
+    "BEGIN\n" ++ unlines (map formatQuery queries) ++ "END"
 renderStatements (Single query) = formatQuery query
 
--- | Helper function to format queries consistently
+-- Update `formatQuery` for RemoveOrder:
 formatQuery :: Lib2.Query -> String
 formatQuery query = case query of
     Lib2.NewOrder orders -> 
         unwords $ "New order" : concatMap formatOrderPair orders ++ ["Confirm"]
-    Lib2.RemoveOrder name _ ->
-        unwords ["Remove", name, "Confirm"]
+    Lib2.RemoveOrder name order -> 
+        unwords ["Remove", name, formatOrder order, "Confirm"]
     Lib2.AddPizzaToOrder name pizza ->
         unwords ["Add pizza", name, formatPizza pizza, "Confirm"]
     Lib2.ListOrders name ->
@@ -129,6 +134,7 @@ formatQuery query = case query of
   where
     formatOrderPair (name, order) = 
         [unwords [name, formatOrder order]]
+
         
 -- | Helper function to format orders
 formatOrder :: Lib2.Order -> String
@@ -198,7 +204,7 @@ stateTransition stateVar command ioChan = case command of
                         return $ Right (Just "State loaded successfully", show newState)
                     Left err -> return $ Left $ "Error loading state: " ++ err
             Left err -> return $ Left $ "Error parsing saved state: " ++ err
-            
+
     SaveCommand -> do
         currentState <- readTVarIO stateVar
         let serializedState = renderStatements (marshallState currentState)
@@ -206,7 +212,7 @@ stateTransition stateVar command ioChan = case command of
         writeChan ioChan (Save serializedState responseChan)
         _ <- readChan responseChan
         return $ Right (Just "State saved successfully", show currentState)
-        
+
     StatementCommand statements -> atomically $ do
         currentState <- readTVar stateVar
         case applyStatements currentState statements of
@@ -214,6 +220,7 @@ stateTransition stateVar command ioChan = case command of
                 writeTVar stateVar newState
                 return $ Right (Nothing, show newState)
             Left err -> return $ Left err
+
 
 -- | Helper function to apply statements to state
 applyStatements :: Lib2.State -> Statements -> Either String Lib2.State

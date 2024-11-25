@@ -22,6 +22,7 @@ module Lib2
     ) where
 
 import Data.Char (isAlpha, isDigit)
+import Data.List
 
 data Query = RemoveOrder String Order
            | NewOrder [(String, Order)]
@@ -57,64 +58,86 @@ data PaymentMethod = CreditCard | Cash | MobilePayment deriving (Eq, Show)
 
 type Parser a = [String] -> Either String (a, [String])
 
-
 parseQuery :: String -> Either String Query
 parseQuery input = case words input of
     "list":rest -> parseListOrders rest
     "New":"order":rest -> parseNewOrder rest
-    ["Remove"] -> Left "Expected person name after 'Remove'"
+    ["Remove"] -> Left "Error: 'Remove' requires a person name."
     "Remove":rest -> parseRemoveOrder rest
     "Add":"pizza":rest -> parseAddPizzaToOrder rest
-    _ -> Left "Invalid command. Must start with 'Remove', 'New order', 'Add pizza', or 'list'"
+    _ -> Left "Error: Invalid command. Start with 'Remove', 'New order', 'Add pizza', or 'list'."
+
+-- Improved `parseNewOrder` with explicit parsing for multiple orders
+parseNewOrder :: [String] -> Either String Query
+parseNewOrder [] = Left "Error: 'New order' requires a person name."
+parseNewOrder input = case parseMultiplePersonOrders input [] of
+    Right (orders, ["Confirm"]) -> Right $ NewOrder orders
+    Right (_, remaining) -> Left $ "Error: New order must end with 'Confirm'. Remaining input: " ++ unwords remaining
+    Left err -> Left err
+
+-- Improved `parseRemoveOrder`
+parseRemoveOrder :: [String] -> Either String Query
+parseRemoveOrder [] = Left "Error: 'Remove' requires a person name."
+parseRemoveOrder input = case parsePerson input of
+    Right (person, ["Confirm"]) -> Right $ RemoveOrder person dummyOrder
+    Right (_, rest) -> Left $ "'Remove' must end with 'Confirm'. Found: " ++ unwords rest
+    Left err -> Left err
+  where
+    dummyOrder = SimpleOrder (Pizza Small Thin [] 1) (OrderDetails Pickup Cash)
+
+-- Improved `parseAddPizzaToOrder`
+parseAddPizzaToOrder :: [String] -> Either String Query
+parseAddPizzaToOrder input = case parsePerson input of
+    Right (person, rest) -> case parsePizza rest of
+        Right (pizza, ["Confirm"]) -> Right $ AddPizzaToOrder person pizza
+        Right (_, remaining) -> Left $ "'Add pizza' must end with 'Confirm'. Found: " ++ unwords remaining
+        Left err -> Left err
+    Left err -> Left err
+
+-- Improved `parseMultiplePersonOrders`
+parseMultiplePersonOrders :: [String] -> [(String, Order)] -> Either String ([(String, Order)], [String])
+parseMultiplePersonOrders [] accum = 
+    if null accum then Left "Error: No orders found." else Right (reverse accum, [])
+parseMultiplePersonOrders ("Confirm":rest) accum = 
+    if null accum then Left "Error: No orders before 'Confirm'." else Right (reverse accum, ["Confirm"])
+parseMultiplePersonOrders input accum = case parsePerson input of
+    Right (person, rest) -> case parseOrder rest of
+        Right (order, remaining) -> parseMultiplePersonOrders remaining ((person, order) : accum)
+        Left err -> Left $ "Error parsing order for " ++ person ++ ": " ++ err
+    Left err -> Left err
+
+-- Improved `parseOrder`
+parseOrder :: Parser Order
+parseOrder ("Order":rest) = do
+    (pizza, afterPizza) <- parsePizza rest
+    (details, finalRest) <- parseOrderDetails afterPizza
+    Right (SimpleOrder pizza details, finalRest)
+parseOrder ("Bundle":rest) = parseOrderBundle rest
+parseOrder _ = Left "Error: Expected 'Order' or 'Bundle'."
+
+-- Improved `parseOrderBundle`
+parseOrderBundle :: Parser Order
+parseOrderBundle input = do
+    (pizzas, afterPizzas) <- parseMultiplePizzas input
+    (subOrders, afterSubOrders) <- parseMultipleOrders afterPizzas
+    (details, finalRest) <- parseOrderDetails afterSubOrders
+    Right (OrderBundle pizzas subOrders details, finalRest)
+
+-- Other helper parsers (parsePizza, parseSize, etc.) remain unchanged
+
+-- New utility: Combine error messages for bundles
+combineErrors :: [Either String a] -> Either String [a]
+combineErrors results = 
+    case partitionEithers results of
+        ([], rights) -> Right rights
+        (errors, _)  -> Left $ intercalate "; " errors
+  where
+    partitionEithers = foldr (\e (ls, rs) -> either (\l -> (l:ls, rs)) (\r -> (ls, r:rs)) e) ([], [])
 
 parseListOrders :: [String] -> Either String Query
 parseListOrders (name:"Confirm":_) = Right $ ListOrders name
 parseListOrders _ = Left "List command must be 'list <name> Confirm'"
 
-parseNewOrder :: [String] -> Either String Query
-parseNewOrder [] = Left "Expected person name after 'New order'"
-parseNewOrder lines =
-    case parseMultiplePersonOrders lines [] of
-        Right (orders, ["Confirm"]) -> Right $ NewOrder orders
-        Right (_, remaining) -> Left $ "Order must end with 'Confirm', but found: " ++ unwords remaining
-        Left err -> Left err
-
-
-parseAddPizzaToOrder :: [String] -> Either String Query
-parseAddPizzaToOrder lines =
-  case parsePerson lines of
-    Right (person, remainingLines1) ->
-      case parsePizza remainingLines1 of
-        Right (pizza, ["Confirm"]) -> Right $ AddPizzaToOrder person pizza
-        _ -> Left "Add pizza must end with 'Confirm'"
-    Left err -> Left err
-
-parseMultiplePersonOrders :: [String] -> [(String, Order)] -> Either String ([(String, Order)], [String])
-parseMultiplePersonOrders [] accum = 
-    if null accum
-    then Left "Expected at least one order"
-    else Right (reverse accum, [])
-parseMultiplePersonOrders ("Confirm":rest) accum =
-    if null accum
-    then Left "Expected at least one order before 'Confirm'"
-    else Right (reverse accum, ["Confirm"])
-parseMultiplePersonOrders lines accum =
-    case parsePerson lines of
-        Right (person, remainingLines1) ->
-            case parseOrder remainingLines1 of
-                Right (order, remainingLines2) ->
-                    parseMultiplePersonOrders remainingLines2 ((person, order) : accum)
-                Left err -> Left $ "Error parsing order for " ++ person ++ ": " ++ err
-        Left err -> Left err
-
-parseRemoveOrder :: [String] -> Either String Query
-parseRemoveOrder lines =
-  case parsePerson lines of
-    Right (person, ["Confirm"]) -> 
-        Right $ RemoveOrder person (SimpleOrder 
-            (Pizza Small Thin [] 1) 
-            (OrderDetails Pickup Cash)) 
-    _ -> Left "Remove order must include a person and end with 'Confirm'"
 
 parsePerson :: Parser String
 parsePerson [] = Left "Expected person name"
@@ -133,26 +156,6 @@ parsePizza ("Pizza:":rest) =
             (\size pizza -> pizza { size = size })
             rest
 parsePizza _ = Left "Expected 'Pizza:'"
-
-parseOrder :: Parser Order
-parseOrder ("Order":rest) = 
-    andThen parsePizza parseOrderDetails SimpleOrder rest
-parseOrder ("Bundle":rest) = parseOrderBundle rest
-parseOrder _ = Left "Expected 'Order' or 'Bundle'"
-
-
-parseOrderBundle :: Parser Order
-parseOrderBundle input = do
-    case parseMultiplePizzas input of
-        Right (pizzas, remainingLines1) ->
-            case parseMultipleOrders remainingLines1 of
-                Right (subOrders, remainingLines2) ->
-                    case parseOrderDetails remainingLines2 of
-                        Right (details, finalRest) ->
-                            Right (OrderBundle pizzas subOrders details, finalRest)
-                        Left err -> Left $ "Error parsing order details: " ++ err
-                Left err -> Left $ "Error parsing sub-orders: " ++ err
-        Left err -> Left $ "Error parsing pizzas: " ++ err
 
 parseMultiplePizzas :: Parser [Pizza]
 parseMultiplePizzas input = case parsePizza input of
