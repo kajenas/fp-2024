@@ -75,15 +75,16 @@ parseNewOrder input = case parseMultiplePersonOrders input [] of
     Right (_, remaining) -> Left $ "Error: New order must end with 'Confirm'. Remaining input: " ++ unwords remaining
     Left err -> Left err
 
--- Improved `parseRemoveOrder`
-parseRemoveOrder :: [String] -> Either String Query
+
+-- Update parseRemoveOrder to be more flexible
+parseRemoveOrder :: [String] -> Either String Lib2.Query
 parseRemoveOrder [] = Left "Error: 'Remove' requires a person name."
 parseRemoveOrder input = case parsePerson input of
-    Right (person, ["Confirm"]) -> Right $ RemoveOrder person dummyOrder
-    Right (_, rest) -> Left $ "'Remove' must end with 'Confirm'. Found: " ++ unwords rest
-    Left err -> Left err
-  where
-    dummyOrder = SimpleOrder (Pizza Small Thin [] 1) (OrderDetails Pickup Cash)
+    Right (person, rest) -> case parseOrder rest of
+        Right (order, ["Confirm"]) -> Right $ Lib2.RemoveOrder person order
+        Right (_, remaining) -> 
+            Left $ "'Remove' must end with 'Confirm'. Found: " ++ unwords remaining
+        Left err -> Left err
 
 -- Improved `parseAddPizzaToOrder`
 parseAddPizzaToOrder :: [String] -> Either String Query

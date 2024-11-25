@@ -120,7 +120,9 @@ renderStatements (Batch queries) =
     "BEGIN\n" ++ unlines (map formatQuery queries) ++ "END"
 renderStatements (Single query) = formatQuery query
 
--- Update `formatQuery` for RemoveOrder:
+
+        
+-- Update formatQuery to add 'Confirm' at the end for RemoveOrder
 formatQuery :: Lib2.Query -> String
 formatQuery query = case query of
     Lib2.NewOrder orders -> 
@@ -135,15 +137,24 @@ formatQuery query = case query of
     formatOrderPair (name, order) = 
         [unwords [name, formatOrder order]]
 
-        
--- | Helper function to format orders
+-- Ensure formatOrder handles nested structures more robustly
 formatOrder :: Lib2.Order -> String
 formatOrder (Lib2.SimpleOrder pizza details) =
     unwords ["Order", formatPizza pizza, formatOrderDetails details]
 formatOrder (Lib2.OrderBundle pizzas subOrders details) =
-    unwords $ ["Bundle"] ++ map formatPizza pizzas ++ 
-              concatMap (return . formatOrder) subOrders ++ 
-              [formatOrderDetails details]
+    unwords $ 
+        ["Bundle"] ++ 
+        map formatPizza pizzas ++ 
+        concatMap formatSubOrder subOrders ++ 
+        [formatOrderDetails details]
+  where
+    formatSubOrder (Lib2.SimpleOrder pizza details) = 
+        [unwords ["Order", formatPizza pizza, formatOrderDetails details]]
+    formatSubOrder (Lib2.OrderBundle subPizzas nestedOrders subDetails) =
+        unwords ["Bundle"] : 
+        map formatPizza subPizzas ++ 
+        concatMap formatSubOrder nestedOrders ++ 
+        [formatOrderDetails subDetails]
 
 -- | Helper function to format pizzas
 formatPizza :: Lib2.Pizza -> String
