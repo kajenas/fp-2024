@@ -96,7 +96,7 @@ instance Arbitrary Lib3.Statements where
 -- Property test
 propertyTests :: TestTree
 propertyTests = testGroup "Property tests"
- [ QC.testProperty "parseStatements . renderStatements == Right query" $ 
+ [ QC.testProperty "parseStatements . renderStatements == Right query" $  -- Test for statement integrity
    \query -> 
      let 
        rendered = Lib3.renderStatements query 
@@ -107,5 +107,25 @@ propertyTests = testGroup "Property tests"
                        "\nParsed result: " ++ show parsed) $ 
          case parsed of 
            Right (parsedQuery, "") -> query == parsedQuery 
-           _ -> False 
+           _ -> False
+      , QC.testProperty "Parsing invalid statements returns an error" $
+   \invalidInput ->
+     case Lib3.parseStatements invalidInput of
+       Left _ -> True  -- Should return an error for invalid input
+       _ -> False
+
+ , QC.testProperty "Empty batch statements can be parsed" $
+   Lib3.parseStatements (Lib3.renderStatements (Lib3.Batch [])) 
+     === Right (Lib3.Batch [], "")
+
+ , QC.testProperty "Large batch statements maintain integrity" $
+   \largeBatch ->
+     let 
+       rendered = Lib3.renderStatements (Lib3.Batch largeBatch)
+       parsed = Lib3.parseStatements rendered
+     in
+       case parsed of
+         Right (Lib3.Batch parsedBatch, "") -> 
+           length parsedBatch == length largeBatch
+         _ -> False
  ]
