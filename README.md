@@ -111,3 +111,32 @@ Pickup
 Credit Card
 Confirm
 ```
+
+### Batch queries and Lib3.hs commands
+
+* `save` - saves the current state. Information is saved in `state.txt`.
+
+    Example:
+    ```
+    >>> save
+    ```
+
+* `load` - loads the state from `state.txt`
+
+    Example:
+    ```
+    >>> load
+    ```
+* Batch queries
+    
+    With `:paste` a batch mode is enabled. User is able to write multiple queries that start with `BEGIN` and end with `END`.
+
+    Example:
+    ```markdown
+    >>> :paste
+    | BEGIN
+    | <...>
+    | END
+    ```
+
+    Pressing `Ctrl + D` ends this mode
