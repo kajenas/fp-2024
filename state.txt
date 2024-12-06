@@ -1,3 +1,3 @@
 BEGIN
-New order Alice Order Pizza: Large Thick Pepperoni 3 Delivery CreditCard Bob Order Pizza: Medium Thin Sausage 4 Pickup Cash Confirm
+New order Alice Bundle Pizza: Large Thick Pepperoni 3 Pizza: Medium Thin Sausage 4 Delivery CreditCard Bob Order Pizza: Medium Thin Sausage 4 Pickup Cash Confirm
 END

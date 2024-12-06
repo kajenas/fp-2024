@@ -20,7 +20,7 @@ import qualified Lib3
 
 import Network.Wreq
 
--- Domain Algebra for Pizza Order System
+
 data PizzaOrderAlgebra a
   = NewOrder [(String, Lib2.Order)] a
   | RemoveOrder String Lib2.Order a
@@ -103,7 +103,7 @@ postAsString s = do
   resp <- post "http://localhost:3000" rawRequest
   return $ cs $ resp ^. responseBody
 
--- Test Interpreter (similar to VHS rental store example)
+-- Test Interpreter
 testInterpretator :: PizzaOrderProgram a -> IO a
 testInterpretator p = do
   state <- newTVarIO Lib2.emptyState
@@ -147,7 +147,7 @@ transitionAndPrint :: TVar Lib2.ProgramState -> Lib3.Command -> Chan Lib3.Storag
 transitionAndPrint state cmd chan = do
   putStrLn $ "Command:\n" ++ show cmd
   res <- Lib3.stateTransition state cmd chan
-  let str = either id (fromMaybe "Success" . fst) res  -- Extracting the Maybe String part of the tuple
+  let str = either id (fromMaybe "Success" . fst) res 
   putStrLn "Result:"
   putStrLn str
   return str
@@ -166,8 +166,7 @@ program = do
   
 
   newOrderToStore [("Alice", order1), ("Bob", order2)]
-  --addPizzaToExistingOrder "Alice" (Lib2.Pizza Lib2.Small Lib2.Stuffed [Lib2.Bacon] 1)
-  --b <- listCustomerOrders "Alice"
+  addPizzaToExistingOrder "Alice" pizza2
   save
   removeOrderFromStore "Bob" order2
   removeOrderFromStore "Alice" order1
@@ -178,10 +177,8 @@ program = do
 
 main :: IO ()
 main = do
+  -- usages:
   --str <- interpretorSingleRequest program
   --str <- interpretWithBatching program
   str <- testInterpretator program
   print str
-
-
-  -- loadinimas error.

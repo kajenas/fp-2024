@@ -39,13 +39,11 @@ storageOpLoop chan = do
     op <- readChan chan
     case op of
         Save content responseChan -> do
-            putStrLn $ "Saving content:\n" ++ content
             writeFile "state.txt" content
             writeChan responseChan ()
             storageOpLoop chan
         Load responseChan -> do
             content <- readFile "state.txt"
-            putStrLn $ "Loading content:\n" ++ content
             writeChan responseChan content
             storageOpLoop chan
 
@@ -97,14 +95,19 @@ parseStatements input
   | "BEGIN" `isPrefixOf` input && "END" `isInfixOf` input =
       let lines' = lines input
           content = unlines $ tail $ init lines' -- Remove BEGIN and END
-      in case mapM Lib2.parseQuery (filter (not . null . trim) $ lines content) of
-           Right queries -> Right (Batch queries, "")
-           Left err -> Left $ "Failed to parse queries: " ++ show err
+      in case map Lib2.parseQuery (filter (not . null) $ lines content) of
+           queries | all isRight queries ->
+               Right (Batch (map fromRight queries), "")
+           _ -> Left "Failed to parse some queries in batch"
   | otherwise =
       case Lib2.parseQuery (trim input) of
         Right query -> Right (Single query, "")
         Left err -> Left err
   where
+    isRight (Right _) = True
+    isRight _ = False
+    fromRight (Right x) = x
+    fromRight _ = error "Impossible case - filtered by isRight"
     trim = dropWhile isSpace . reverse . dropWhile isSpace . reverse
 
 
