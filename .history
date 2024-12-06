@@ -1,3 +1,17 @@
+New order John Order Pizza: Small Thin Pepperoni 2 Delivery CreditCard Confirm
+load
+load
+Remove John Order Pizza: Small Thin Pepperoni 2 Delivery CreditCard Confirm
+save
+New order John Order Pizza: Small Thin Pepperoni 2 Delivery CreditCard Confirm
+New order John Order Pizza: Small Thin Pepperoni 2 Delivery Credit Confirm
+New order John Order Pizza: Pizza: small thin pepperoni 2 Delivery Credit Confirm
+New order John Order Pizza small thin pepperoni 2 Delivery Credit Confirm
+New order John Pizza: small thin pepperoni 2 Delivery Credit Confirm
+New order John Order Pizza: small thin pepperoni 2 Delivery Credit Confirm
+Remove John Order Pizza: small thin pepperoni 2 Delivery Credit Confirm
+Remove Kai Order Pizza: large thick mushrooms 4 Pickup Credit Confirm
+New order John Order Pizza: small thin pepperoni 2 Delivery Credit Confirm
 load
 Remove John Order Pizza: small thin pepperoni 2 Delivery Credit Confirm
 Remove Kai Order Pizza: large thick mushrooms 4 Pickup Credit Confirm
@@ -84,17 +98,3 @@ New order John Order Pizza: small thin pepperoni 2 Delivery Credit Confirm;
 BEGIN
 :paste
 Remove John Confirm
-END
-New order Kajus Order Pizza: large thick pepperoni 3 Delivery Credit Confirm;
-Add pizza John Pizza: large thick bacon sausage 1 Confirm;
-New order John Order Pizza: small thin pepperoni 2 Delivery Credit Confirm;
-BEGIN
-:paste
-load
-Remove John Confirm
-save
-Add pizza John Pizza: large thick bacon sausage 1 Confirm
-save
-New order John Order Pizza: small thin pepperoni 2 Delivery Credit Confirm
-New order John Order Pizza: small thin pepperoni quantity 2 Delivery Credit Confirm
-New order John Order Pizza: small thin pepperoni mushrooms quantity 2 Delivery Credit Confirm

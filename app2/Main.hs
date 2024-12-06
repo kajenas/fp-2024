@@ -14,7 +14,7 @@ import System.Console.Repline
     evalRepl,
   )
 
-type Repl a = HaskelineT (StateT Lib2.State IO) a
+type Repl a = HaskelineT (StateT Lib2.ProgramState IO) a
 
 final :: Repl ExitDecision
 final = do
