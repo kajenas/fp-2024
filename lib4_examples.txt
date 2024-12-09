@@ -1,0 +1,20 @@
+Batch request:
+Sending request:
+BEGIN
+New order Kajus Order Pizza: Large Thick Pepperoni 3 Delivery CreditCard Tomas Order Pizza: Medium Thin Sausage 4 Pickup Cash Confirm
+Add pizza Kajus Pizza: Medium Thin Sausage 4 Confirm
+END
+Sending request:
+save
+Sending request:
+BEGIN
+Remove Tomas Order Pizza: Medium Thin Sausage 4 Pickup Cash Confirm
+Remove Kajus Order Pizza: Large Thick Pepperoni 3 Delivery CreditCard Confirm
+END
+Sending request:
+load
+Sending request:
+list Tomas Confirm
+Sending request:
+list Kajus Confirm
+("Success","Success")

@@ -5,6 +5,9 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE DeriveFunctor #-}
 {-# OPTIONS_GHC -Wno-deferred-out-of-scope-variables #-}
+{-# OPTIONS_GHC -Wno-unused-do-bind #-}
+{-# OPTIONS_GHC -Wno-unused-top-binds #-}
+{-# OPTIONS_GHC -Wno-name-shadowing #-}
 
 module Main (main) where
 
@@ -165,20 +168,21 @@ program = do
       order2 = Lib2.SimpleOrder pizza2 details2
   
 
-  newOrderToStore [("Alice", order1), ("Bob", order2)]
-  addPizzaToExistingOrder "Alice" pizza2
+-- simulating the following program:
+  newOrderToStore [("Kajus", order1), ("Tomas", order2)]
+  addPizzaToExistingOrder "Kajus" pizza2
   save
-  removeOrderFromStore "Bob" order2
-  removeOrderFromStore "Alice" order1
+  removeOrderFromStore "Tomas" order2
+  removeOrderFromStore "Kajus" order1
   load
-  b <- listCustomerOrders "Bob"
-  a <- listCustomerOrders "Alice"
+  b <- listCustomerOrders "Tomas"
+  a <- listCustomerOrders "Kajus"
   return (b, a)
 
 main :: IO ()
 main = do
   -- usages:
-  --str <- interpretorSingleRequest program
+  str <- interpretorSingleRequest program
   --str <- interpretWithBatching program
-  str <- testInterpretator program
+  --str <- testInterpretator program
   print str
